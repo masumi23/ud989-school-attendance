@@ -16,7 +16,7 @@ var model = {
 	},
 
 	studentNames: ["Slappy the Frog", "Lilly the Lizard", "Paulrus the Walrus", "Gregory the Goat", "Adam the Anaconda"],
-	days: 12
+	days: 4
 };
 
 var octopus = {
@@ -39,6 +39,16 @@ var octopus = {
 		model.days = num;
 	},
 
+	setMissedDays: function (studentNum, dayNum) {
+		console.log(model.students[studentNum]);
+		model.students[studentNum].attendance[dayNum-1]=true;
+		console.log(model.students[studentNum].attendance);
+	},
+
+	getMissedDays: function (studentNum) {
+		return model.students[studentNum].attendance;
+	},
+
 	daysMissed: function(num) {
 		console.log('hiiii');
 	}
@@ -51,11 +61,14 @@ var view = {
 	init: function() {
 		//get elements from the DOM
 		var bodyElem = document.querySelector('body');
-		
+
+		//get element from octopus
+		var studentList = octopus.getStudents();
+
 		//make a table
-		var table = document.createElement('table');
-		table.id = "mainTable";
-		bodyElem.appendChild(table);
+		this.table = document.createElement('table');
+		this.table.id = "mainTable";
+		bodyElem.appendChild(this.table);
 
 		//make thead
 		var tableHead = document.createElement('thead');
@@ -73,15 +86,15 @@ var view = {
 				th.textContent = i;
 			}
 		}
-		table.appendChild(tableHead);
+		this.table.appendChild(tableHead);
 		var tHeadData = document.createElement('td');
 
 		//make tbody of table
 		var tableBody = document.createElement('tbody');
-		table.appendChild(tableBody);
+		this.table.appendChild(tableBody);
 
 		//make rows
-		for (var j = 0; j < octopus.getStudents().length; j++) {
+		for (var j = 0; j < studentList.length; j++) {
 			var tr=document.createElement('tr');
 			tr.classList.add('students');
 			tableBody.appendChild(tr);
@@ -89,23 +102,59 @@ var view = {
 			for (var k = 0; k <octopus.getDays()+2; k++) {
 				var td = document.createElement('td');
 				tr.appendChild(td);
+				//add student's name
 				if (k===0) {
 					td.classList.add('name-col');
-					td.textContent = octopus.getStudents()[j].name;
+					td.textContent = studentList[j].name;
+				//add end section
 				} else if (k===octopus.getDays()+1) {
 					td.classList.add('missed-col');
 					td.textContent = octopus.daysMissed();
+				//everything else has checkboxes
 				} else {
 					var input = document.createElement('input');
 					input.setAttribute('type','checkbox');
-					input.addEventListener('click', function(){
-						
-					}, false)
+					
+					//on click, 
+					input.addEventListener('click', (function(frozenStudent, frozenDay){
+						return function () {
+							console.log('function', frozenStudent+" "+frozenDay);
+							octopus.setMissedDays(frozenStudent, frozenDay);
+						};
+					})(j,k), false);
 					td.appendChild(input);
 				}
+			}
+		}
+	},
+	
+	render: function () {
+		var studentList = octopus.getStudents();
+		var dayList = octopus.getDays();
+		var trElemList = this.table.querySelectorAll('tr');
+		//go over every student
+		for (var i=0; i<studentList.length; i++) {
+			var student = studentList[i];
+			var trElem = trElemList[i];
+			//access all tds in the trElem
+			var tdElemList = trElem.querySelectorAll('td');
+			
+			
+			//go over days for that specific student
+			for (var j=0; j<dayList; j++) {
+				//get the specific day (td element), for that student
+				var dayElem = tdElemList[j+1];
+				//get the input element for that td
+				var checkbox = dayElem.querySelector('input');
+				//test: update the data with what is in the model
+				// dayElem.textContent = octopus.getMissedDays(i)[j];
+				//test: check the first input in trElem
+				console.log(i,j);
+				checkbox.checked = true;
 			}
 		}
 	}
 };
 
 octopus.init();
+view.render();
