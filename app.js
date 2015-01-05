@@ -1,7 +1,6 @@
 var model = {
 //array with list of students, the days they attended, and did not attend
 	init: function () {
-		console.log('hi');
 		this.students = [];
 		for (var i=0; i<this.studentNames.length; i++) {
 			var student = {
@@ -36,9 +35,12 @@ var octopus = {
 		return model.days;
 	},
 
-//sets the number of days
 	setDays: function (num) {
 		model.days = num;
+	},
+
+	daysMissed: function(num) {
+		console.log('hiiii');
 	}
 //updates the model about what has been checked
 
@@ -71,7 +73,6 @@ var view = {
 				th.textContent = i;
 			}
 		}
-
 		table.appendChild(tableHead);
 		var tHeadData = document.createElement('td');
 
@@ -91,15 +92,20 @@ var view = {
 				if (k===0) {
 					td.classList.add('name-col');
 					td.textContent = octopus.getStudents()[j].name;
+				} else if (k===octopus.getDays()+1) {
+					td.classList.add('missed-col');
+					td.textContent = octopus.daysMissed();
 				} else {
-					td.textContent='-';
+					var input = document.createElement('input');
+					input.setAttribute('type','checkbox');
+					input.addEventListener('click', function(){
+						
+					}, false)
+					td.appendChild(input);
 				}
 			}
 		}
-
-
 	}
-
 };
 
 octopus.init();
