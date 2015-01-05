@@ -1,13 +1,30 @@
 var model = {
 //array with list of students, the days they attended, and did not attend
-	students: ["Slappy the Frog", "Lilly the Lizard", "Paulrus the Walrus", "Gregory the Goat", "Adam the Anaconda"],
+	init: function () {
+		console.log('hi');
+		this.students = [];
+		for (var i=0; i<this.studentNames.length; i++) {
+			var student = {
+				name: this.studentNames[i],
+				attendance: []
+			};
+			for (var j=0; j<this.days; j++) {
+				student.attendance.push(false);
+			}
+			this.students.push(student);
+		}
+		console.log(this.students);
+	},
+
+	studentNames: ["Slappy the Frog", "Lilly the Lizard", "Paulrus the Walrus", "Gregory the Goat", "Adam the Anaconda"],
 	days: 12
 };
 
 var octopus = {
 
-//tells the view to render
+	//tells the view to render
 	init: function () {
+		model.init();
 		view.init();
 	},
 
@@ -46,10 +63,10 @@ var view = {
 			tableHead.appendChild(th);
 			if (i===0) {
 				th.classList.add('name-col');
-				th.textContent = "Student Name";
+				th.textContent = 'Student Name';
 			} else if (i===octopus.getDays()+1) {
 				th.classList.add('missed-col');
-				th.textContent = "Days Missed-Col";
+				th.textContent = 'Days Missed-Col';
 			} else {
 				th.textContent = i;
 			}
@@ -65,12 +82,18 @@ var view = {
 		//make rows
 		for (var j = 0; j < octopus.getStudents().length; j++) {
 			var tr=document.createElement('tr');
+			tr.classList.add('students');
 			tableBody.appendChild(tr);
 			//make td
 			for (var k = 0; k <octopus.getDays()+2; k++) {
 				var td = document.createElement('td');
-				td.textContent='-'
 				tr.appendChild(td);
+				if (k===0) {
+					td.classList.add('name-col');
+					td.textContent = octopus.getStudents()[j].name;
+				} else {
+					td.textContent='-';
+				}
 			}
 		}
 
