@@ -12,11 +12,10 @@ var model = {
 			}
 			this.students.push(student);
 		}
-		console.log(this.students);
 	},
 
 	studentNames: ["Slappy the Frog", "Lilly the Lizard", "Paulrus the Walrus", "Gregory the Goat", "Adam the Anaconda"],
-	days: 4
+	days: 5
 };
 
 var octopus = {
@@ -39,26 +38,22 @@ var octopus = {
 		model.days = num;
 	},
 
-	setMissedDays: function (studentNum, dayNum) {
-		console.log(model.students[studentNum]);
-		model.students[studentNum].attendance[dayNum-1]=true;
-		console.log(model.students[studentNum].attendance);
+	setMissedDays: function (studentNum, dayNum, tf) {
+		model.students[studentNum].attendance[dayNum-1]=tf;
+		console.log('setmissed days', model.students[studentNum].attendance);
+		view.render();
 	},
 
 	getMissedDays: function (studentNum) {
 		return model.students[studentNum].attendance;
 	},
 
-	daysMissed: function(num) {
-		console.log('hiiii');
-	}
-//updates the model about what has been checked
-
 };
 
 var view = {
 //create a table with boxes to click for each student/day
 	init: function() {
+		console.log('view.init');
 		//get elements from the DOM
 		var bodyElem = document.querySelector('body');
 
@@ -93,8 +88,9 @@ var view = {
 		var tableBody = document.createElement('tbody');
 		this.table.appendChild(tableBody);
 
-		//make rows
+		//make rows representing students
 		for (var j = 0; j < studentList.length; j++) {
+			var theStudent = studentList[j];
 			var tr=document.createElement('tr');
 			tr.classList.add('students');
 			tableBody.appendChild(tr);
@@ -105,56 +101,79 @@ var view = {
 				//add student's name
 				if (k===0) {
 					td.classList.add('name-col');
-					td.textContent = studentList[j].name;
+					td.textContent = theStudent.name;
 				//add end section
 				} else if (k===octopus.getDays()+1) {
 					td.classList.add('missed-col');
-					td.textContent = octopus.daysMissed();
+					td.id='missed-col';
 				//everything else has checkboxes
 				} else {
 					var input = document.createElement('input');
 					input.setAttribute('type','checkbox');
+					td.id='checkbox';
 					
-					//on click, 
+					//on click. j and k are passed in as frozen student and frozen day
 					input.addEventListener('click', (function(frozenStudent, frozenDay){
 						return function () {
-							console.log('function', frozenStudent+" "+frozenDay);
-							octopus.setMissedDays(frozenStudent, frozenDay);
+							//if that row is linked to true or false, then change it. -1 because day 2 is linked to day cell 1 (cells start at 0)
+							if (octopus.getMissedDays(frozenStudent)[frozenDay-1]===true) {
+								console.log('CLICK was true, change to false', studentList[frozenStudent].name, frozenDay);
+								octopus.setMissedDays(frozenStudent, frozenDay, false);
+							} else {
+								console.log('CLICK was false, change to true');
+								octopus.setMissedDays(frozenStudent, frozenDay, true);
+							}
 						};
 					})(j,k), false);
 					td.appendChild(input);
 				}
 			}
 		}
+		view.render();
 	},
 	
 	render: function () {
+		console.log('view.render');
 		var studentList = octopus.getStudents();
 		var dayList = octopus.getDays();
+		//node list of all trs
 		var trElemList = this.table.querySelectorAll('tr');
+		//node list of all .missed-col
+		var missedDaysElem = this.table.querySelectorAll('#missed-col');
+		
 		//go over every student
 		for (var i=0; i<studentList.length; i++) {
-			var student = studentList[i];
 			var trElem = trElemList[i];
-			//access all tds in the trElem
-			var tdElemList = trElem.querySelectorAll('td');
+			//access a node (acts sort of like an array) list of all checkboxes
+			var checkboxElemList = trElem.querySelectorAll('#checkbox');
+			//make a counter
+			var count = 0;
 			
-			
-			//go over days for that specific student
+			//update the checkboxes
+			//go over days for that specific student. Daylist is the number of days ex. 3.
+			//dayElem takes from a node list of all checkboxes. It selects ??
 			for (var j=0; j<dayList; j++) {
-				//get the specific day (td element), for that student
-				var dayElem = tdElemList[j+1];
+				//get the specific day (node?) (td element), for that student
+				var dayElem = checkboxElemList[j];
+				console.log(j, dayElem);
 				//get the input element for that td
 				var checkbox = dayElem.querySelector('input');
-				//test: update the data with what is in the model
-				// dayElem.textContent = octopus.getMissedDays(i)[j];
-				//test: check the first input in trElem
-				console.log(i,j);
-				checkbox.checked = true;
+				//check the box if that box is stored as checked in the model
+				checkbox.checked = octopus.getMissedDays(i)[j];
+				
+				//add to counter of missed days
+				var studentAttendance = octopus.getMissedDays(i);
+				console.log(studentAttendance);
+				if (studentAttendance[i] === false ) {
+					count++;
+					console.log(count);
+					console.log('student attendance for', studentList[i].name, studentList[i].attendance);
+				}
 			}
+			missedDaysElem[i].textContent = count;
+			console.log(count);
 		}
 	}
 };
 
 octopus.init();
-view.render();
